@@ -34,6 +34,7 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import ErrorAlert from '../../components/handleStatusCode/error'
 import FileUploaderRestrictions from '../../components/uplaoder/FileUploaderRestrictions'
 import TeacherAttachment from './TeacherAttachment'
+import defaultImage from '../../../assets/images/base/logo.png'
 
 const ELevelCard = ({ 
   data, 
@@ -59,10 +60,79 @@ const ELevelCard = ({
   const [files, setFiles] = useState([])
   const { data: countriesData, isLoading: isLoadingCountries } = useCountriesQuery()
   const countries = countriesData?.data || []
-  const countryOptions = countries.map(country => ({
-    value: country.id,
-    label: country.name
-  }))
+  const countryOptions = [
+    { value: null, label: t('مشترك'), flag: null },
+    ...countries.map(country => ({
+      value: country.id,
+      label: country.name,
+      flag: country?.media?.url || country?.image?.url || null
+    }))
+  ]
+  
+  // Helper function to get country by id
+  const getCountryById = (countryId) => {
+    return countries.find(country => country.id === countryId)
+  }
+  
+  // Custom Option component for react-select with flag
+  const CustomOption = ({ innerProps, label, data }) => (
+    <div
+      {...innerProps}
+      style={{
+        padding: '8px 12px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}
+    >
+      {data.flag ? (
+        <img
+          src={data.flag}
+          alt={label}
+          style={{
+            width: '20px',
+            height: '20px',
+            objectFit: 'cover',
+            borderRadius: '4px',
+            border: '1px solid #e9ecef'
+          }}
+          onError={(e) => {
+            e.target.src = defaultImage
+          }}
+        />
+      ) : null}
+      <span>{label}</span>
+    </div>
+  )
+  
+  // Custom SingleValue component for react-select with flag
+  const CustomSingleValue = ({ data }) => {
+    if (!data || data.value === null) {
+      return <span>{t('مشترك')}</span>
+    }
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {data.flag ? (
+          <img
+            src={data.flag}
+            alt={data.label}
+            style={{
+              width: '20px',
+              height: '20px',
+              objectFit: 'cover',
+              borderRadius: '4px',
+              border: '1px solid #e9ecef'
+            }}
+            onError={(e) => {
+              e.target.src = defaultImage
+            }}
+          />
+        ) : null}
+        <span>{data.label}</span>
+      </div>
+    )
+  }
 
   // API hooks
   const [createELevel, { isLoading: isLoadingCreate }] = useCreateMutation()
@@ -333,6 +403,34 @@ const ELevelCard = ({
                   <strong>{item.c_levels.length}</strong> {t('Classes')}
                 </small>
               )}
+              {item.contry_id ? (
+                (() => {
+                  const country = getCountryById(item.contry_id)
+                  return country ? (
+                    <div className="d-flex align-items-center gap-1">
+                      {country?.media?.url || country?.image?.url ? (
+                        <img
+                          src={country.media?.url || country.image?.url}
+                          alt={country.name}
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            border: '1px solid #e9ecef'
+                          }}
+                          onError={(e) => {
+                            e.target.src = defaultImage
+                          }}
+                        />
+                      ) : null}
+                      <small className="text-muted">{country.name}</small>
+                    </div>
+                  ) : null
+                })()
+              ) : (
+                <small className="text-muted">{t('مشترك')}</small>
+              )}
             </div>
             {item.duration > 0 && (
               <small className="text-muted">
@@ -410,10 +508,19 @@ const ELevelCard = ({
                     isLoading={isLoadingCountries}
                     isDisabled={isLoadingCountries}
                     options={countryOptions}
-                    value={countryOptions.find(option => option.value === formData.contry_id) || null}
+                    value={countryOptions.find(option => option.value === (formData.contry_id || null)) || countryOptions[0]}
                     placeholder={t('Select a country (optional)')}
-                    onChange={option => setFormData(prev => ({ ...prev, contry_id: option ? option.value : '' }))}
+                    onChange={option => setFormData(prev => ({ ...prev, contry_id: option?.value || '' }))}
+                    components={{
+                      Option: CustomOption,
+                      SingleValue: CustomSingleValue
+                    }}
                   />
+                  {!formData.contry_id && (
+                    <small className="text-muted d-block mt-1">
+                      {t('مشترك')} - {t('This education level will be shared across all countries')}
+                    </small>
+                  )}
                 </FormGroup>
               </Col>
               <Col md={12}>
@@ -494,10 +601,19 @@ const ELevelCard = ({
                     isLoading={isLoadingCountries}
                     isDisabled={isLoadingCountries}
                     options={countryOptions}
-                    value={countryOptions.find(option => option.value === formData.contry_id) || null}
+                    value={countryOptions.find(option => option.value === (formData.contry_id || null)) || countryOptions[0]}
                     placeholder={t('Select a country (optional)')}
-                    onChange={option => setFormData(prev => ({ ...prev, contry_id: option ? option.value : '' }))}
+                    onChange={option => setFormData(prev => ({ ...prev, contry_id: option?.value || '' }))}
+                    components={{
+                      Option: CustomOption,
+                      SingleValue: CustomSingleValue
+                    }}
                   />
+                  {!formData.contry_id && (
+                    <small className="text-muted d-block mt-1">
+                      {t('مشترك')} - {t('This education level will be shared across all countries')}
+                    </small>
+                  )}
                 </FormGroup>
               </Col>
               <Col md={12}>
