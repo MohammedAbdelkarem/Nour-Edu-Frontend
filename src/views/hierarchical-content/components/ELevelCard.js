@@ -378,18 +378,18 @@ const ELevelCard = ({
                     background: 'rgba(255, 255, 255, 0.95)',
                     border: '1px solid rgba(0, 0, 0, 0.08)',
                     borderRadius: '50%',
-                    padding: '0.5rem',
+                    padding: '0.6rem',
                     color: '#6c757d',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: '32px',
-                    height: '32px',
+                    width: '38px',
+                    height: '38px',
                     backdropFilter: 'blur(10px)',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                   }}
                 >
-                  <Settings size={14} className="text-muted" />
+                  <Settings size={18} className="text-muted" />
                 </div>
               </div>
             </div>
